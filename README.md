@@ -1,65 +1,61 @@
-# qlik-mcp
+# Tablero Acueducto y PAP — Informe Transformación
 
-Servidor MCP + utilidades para consultar apps de Qlik Sense de Coopserfun
-(Comercial Homenajes, Acueducto_y_PAP_Informe_Transformación, etc.) vía
-Engine API y QRS.
+Documentación funcional y técnica del tablero de Qlik Sense usado para el
+seguimiento del proceso de **Acueducto y PAP (Patrimonios Autónomos Públicos)**
+de Coopserfun.
 
-## Requisitos
+El tablero se compone de **dos apps de Qlik Sense** que trabajan en cadena:
+
+| # | App de Qlik | Rol | Documentación |
+|---|---|---|---|
+| 1 | `Acueducto_y_PAP_Informe_Cargue` | Carga, validación e ingesta de archivos fuente al modelo de datos | [docs/Acueducto_y_PAP_Informe_Cargue.md](docs/Acueducto_y_PAP_Informe_Cargue.md) |
+| 2 | `Acueducto_y_PAP_Informe_Transformación` | Transformación, cálculo de métricas y publicación de visualizaciones | [docs/Acueducto_y_PAP_Informe_Transformacion.md](docs/Acueducto_y_PAP_Informe_Transformacion.md) |
+
+Visión global del tablero (KPIs, flujo entre apps, hojas y vistas):
+[**docs/Tablero_Acueducto_y_PAP.md**](docs/Tablero_Acueducto_y_PAP.md)
+
+## Estructura del repositorio
+
+```
+Tablero_PAP_Qlik/
+├─ docs/                         Documentación del tablero y de cada app
+│   ├─ Tablero_Acueducto_y_PAP.md
+│   ├─ Acueducto_y_PAP_Informe_Cargue.md
+│   └─ Acueducto_y_PAP_Informe_Transformacion.md
+├─ src/qlik_mcp/                 Servidor MCP usado para consultar las apps (herramienta)
+├─ scripts/                      Scripts de descubrimiento y validación
+├─ explorer/                     TUI de exploración del modelo
+├─ CLAUDE.md                     Notas operativas
+├─ .env.example                  Plantilla de variables de entorno
+└─ requirements.txt
+```
+
+> El código en `src/qlik_mcp/`, `scripts/` y `explorer/` es la **herramienta**
+> usada para consultar Qlik y mantener la documentación al día. El producto
+> documentado es el **tablero** descrito en `docs/`.
+
+## Cómo se mantiene la documentación
+
+1. Conectarse al Qlik vía la herramienta (`src/qlik_mcp/`) o directamente en el QMC.
+2. Ejecutar scripts de descubrimiento (`scripts/buscar_app_transformacion.py`,
+   `scripts/ver_script_carga.py`, etc.) para extraer modelo, variables y métricas.
+3. Volcar los hallazgos en los `.md` correspondientes dentro de `docs/`.
+4. Commit + push.
+
+## Requisitos para correr la herramienta
 
 - Python 3.13+
-- Acceso al Qlik Sense interno (host `bi.coopserfun.com.co`)
-- Certificados cliente exportados desde QMC en `certs/` (no incluidos en el repo)
-
-## Instalación
+- Acceso al Qlik Sense interno (`bi.coopserfun.com.co`)
+- Certificados cliente en `certs/` (no incluidos)
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-copy .env.example .env   # editar valores si difieren
-```
-
-Colocar `root.pem`, `client.pem` y `client_key.pem` dentro de `certs/`.
-
-## Estructura
-
-```
-qlik-mcp/
-├─ src/qlik_mcp/        Servidor MCP (engine_client, qrs_client, tools, server)
-├─ scripts/             Scripts ad-hoc de análisis (uno por consulta puntual)
-├─ docs/                Documentación por app de Qlik
-│   ├─ Comercial_Homenajes.md
-│   └─ Acueducto_y_PAP_Informe_Transformacion.md
-├─ certs/               Certificados (ignorado por git)
-├─ .env                 Variables de entorno (ignorado por git)
-├─ CLAUDE.md            Notas operativas para Claude
-└─ requirements.txt
-```
-
-## Apps documentadas
-
-| App | ID | Documentación |
-|---|---|---|
-| Comercial Homenajes | `6094b586-82ff-4dd1-9a0e-45c4eb67ef16` | [CLAUDE.md](CLAUDE.md) |
-| Acueducto y PAP — Informe Transformación | _pendiente_ | [docs/Acueducto_y_PAP_Informe_Transformacion.md](docs/Acueducto_y_PAP_Informe_Transformacion.md) |
-
-## Uso rápido
-
-```python
-import asyncio, sys
-sys.path.insert(0, 'src')
-from qlik_mcp.engine_client import EngineClient
-
-async def main():
-    async with EngineClient() as eng:
-        apps = await eng.list_apps()
-        for a in apps:
-            print(a['qDocId'], a['qTitle'])
-
-asyncio.run(main())
+copy .env.example .env
 ```
 
 ## Seguridad
 
-- `certs/`, `.env` y todos los Excel/CSV/Parquet están en `.gitignore`.
-- Antes de cada push verifica `git status` para no subir credenciales ni datos sensibles.
+Excluidos del repo: `certs/*.pem`, `.env`, archivos Excel/CSV/Parquet y todos
+los `*.txt` de exploración. Ver `.gitignore`.

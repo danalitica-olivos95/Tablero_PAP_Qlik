@@ -1,22 +1,23 @@
-# Acueducto y PAP — Informe Transformación
+# App: Acueducto_y_PAP_Informe_Transformación
 
-> Documentación de la app de Qlik. **Pendiente completar con valores reales** —
-> los campos marcados con `_pendiente_` se llenan ejecutando el script de
-> descubrimiento (ver más abajo).
+> Segunda app del [Tablero Acueducto y PAP](Tablero_Acueducto_y_PAP.md).
+> Toma los QVDs publicados por
+> [`Acueducto_y_PAP_Informe_Cargue`](Acueducto_y_PAP_Informe_Cargue.md),
+> aplica reglas de transformación, calcula KPIs y publica las hojas que
+> consume el usuario final.
 
 ## Identificación
 
 | Campo | Valor |
 |---|---|
-| Nombre app | `Acueducto_y_PAP_Informe_Transformación` |
+| Nombre | `Acueducto_y_PAP_Informe_Transformación` |
 | App ID (qDocId) | _pendiente_ |
 | Stream | _pendiente_ |
 | Última recarga | _pendiente_ |
 | Owner | _pendiente_ |
+| Frecuencia recarga | _pendiente_ |
 
-## Descubrir el App ID
-
-Desde la raíz del repo, con el entorno virtual activo y `certs/` configurado:
+### Cómo descubrir el App ID
 
 ```python
 import asyncio, sys
@@ -27,41 +28,59 @@ async def main():
     async with QrsClient() as qrs:
         apps = await qrs.list_apps()
         for a in apps:
-            if 'Acueducto' in a.get('name', ''):
+            if 'Transformaci' in a.get('name', ''):
                 print(a['id'], '·', a['name'], '·', a.get('stream', {}).get('name'))
 
 asyncio.run(main())
 ```
 
-Copiar el `id` impreso en la fila **App ID** de la tabla anterior y en `.env`
-o en una constante del módulo correspondiente.
+## Entradas (desde la app de Cargue)
 
-## Modelo de datos
+_pendiente_ — listar los QVDs producidos por la app de Cargue que esta app consume.
 
-### Tablas principales
-| Tabla | Origen (QVD/Excel) | Llaves | Notas |
+| QVD | Origen | Campos relevantes |
+|---|---|---|
+| _pendiente_ | `Acueducto_y_PAP_Informe_Cargue` | _pendiente_ |
+
+## Modelo de datos resultante
+
+### Tablas
+| Tabla | Origen | Llaves | Notas |
 |---|---|---|---|
 | _pendiente_ | _pendiente_ | _pendiente_ | _pendiente_ |
-
-### Campos clave
-- _pendiente_
 
 ### Variables del app
 | Variable | Valor / fórmula | Uso |
 |---|---|---|
 | _pendiente_ | _pendiente_ | _pendiente_ |
 
-## Métricas y expresiones documentadas
+## Reglas de transformación
 
-| Métrica | Expresión Qlik | Hoja/Visual donde aparece |
+_pendiente_ — describir cada transformación importante del script de carga
+(qué hace, sobre qué tabla, condiciones).
+
+| # | Regla | Tabla destino | Fuente del script |
+|---|---|---|---|
+| 1 | _pendiente_ | _pendiente_ | _pendiente_ |
+
+## Métricas y expresiones publicadas
+
+| Métrica | Expresión Qlik | Hoja/Visual |
 |---|---|---|
 | _pendiente_ | _pendiente_ | _pendiente_ |
 
+## Hojas publicadas
+
+| Hoja | Objetivo | Dimensiones | Medidas |
+|---|---|---|---|
+| _pendiente_ | _pendiente_ | _pendiente_ | _pendiente_ |
+
 ## Hallazgos / Issues conocidos
 
-_pendiente — se registran aquí discrepancias, bugs del script de carga,
-diferencias con Excel de referencia, etc._
+_pendiente_ — bugs detectados, diferencias con fuente, fixes aplicados o pendientes.
 
-## Cambios recientes en el script de transformación
+## Bitácora de cambios al script de transformación
 
-_pendiente — fechas y resumen de cambios al script de carga._
+| Fecha | Cambio | Por |
+|---|---|---|
+| _pendiente_ | _pendiente_ | _pendiente_ |
