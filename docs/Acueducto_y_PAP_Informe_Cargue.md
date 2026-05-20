@@ -10,11 +10,11 @@
 | Campo | Valor |
 |---|---|
 | Nombre | `Acueducto_y_PAP_Informe_Cargue` |
-| App ID (qDocId) | _pendiente_ |
-| Stream | _pendiente_ |
-| Última recarga | _pendiente_ |
-| Owner | _pendiente_ |
-| Frecuencia recarga | _pendiente_ |
+| App ID (qDocId) | 09f9b467-71ba-4182-9dfe-b34b8cd9096d |
+| Stream | Dir_Analitica |
+| Última recarga | about 3 hours ago |
+| Owner | Dec 4, 2025 5:00 PM |
+| Frecuencia recarga | Esta aplicación se actualiza automáticamente tres veces al día: 8:00 AM, 12:00 PM y 5:00 PM|
 
 ### Cómo descubrir el App ID
 
