@@ -4,17 +4,27 @@
 > Lee el QVD producido por
 > [`Acueducto_y_PAP_Informe_Cargue`](Acueducto_y_PAP_Informe_Cargue.md),
 > aplica reglas de transformación, clasifica canal de venta, calcula KPIs y
-> publica la tabla `Contratos_Base` que alimenta visualizaciones.
+> publica 5 hojas de análisis al usuario final.
+
+## Descripción funcional
+
+> Reporte de ventas de Acueducto-PAP, donde están las transformaciones y
+> seguimiento a los empleados por ventas en los diferentes canales. El
+> presente reporte permite identificar las **ventas netas** del convenio
+> con la **EAAB-ESP**; sin embargo, **no representa el estado de cierre
+> mensual**.
 
 ## Identificación
 
 | Campo | Valor |
 |---|---|
 | Nombre | `Acueducto_y_PAP_Informe_Transformación` |
-| App ID (qDocId) | _pendiente_ |
-| Stream | _pendiente_ (probable `Dir_Analitica`) |
-| Owner | _pendiente_ |
-| Frecuencia recarga | _pendiente_ — depende de la app de Cargue (08:00, 12:00, 17:00) |
+| App ID (qDocId) | `f9047ec0-c8b9-4b14-ba82-3579359a8dca` |
+| Stream | `PAP` |
+| Creado | 4 dic 2025 17:46 |
+| Publicado | 19 ene 2026 18:01 |
+| Última recarga | Dinámica — encadenada con la app de Cargue |
+| Tamaño app | 2 MiB |
 
 ## Entradas
 
@@ -172,6 +182,85 @@ Campos resultantes (después del `RENAME TABLE Contratos_Base_Final TO Contratos
 | `Calendario_Meses` | INLINE | 18 (2025-07 → 2026-12) | Eje temporal en visualizaciones |
 | `Metas_Mensuales` | INLINE | 6 (2025-07 → 2025-12) | KPI de meta de vendedores |
 
+## Hojas publicadas
+
+El app tiene **5 hojas** organizadas como flujo de análisis:
+
+### Hoja 01 — Contratos_Acueducto_PAP
+
+![Hoja 01](img/01_contratos_acueducto_pap.png)
+
+| Elemento | Detalle |
+|---|---|
+| Filtros | `Convenio`, `Estado`, `Canal_Venta` |
+| KPIs | `Ventas Totales` (2.420) · `Ventas Acueducto` (2.238) · `Ventas PAP` (182) |
+| Tablas | Cantidad de contratos por estado — por convenio, estado, canal |
+| Gráficas | Series temporales: Ventas Totales / Ventas Acueducto / Ventas PAP |
+| Métricas usadas | `SUM(Total_Contratos)` segmentado por `Convenio_Etiqueta` y `Canal_PAP_Final` |
+
+### Hoja 02 — Estados_Cancelados
+
+![Hoja 02](img/02_estados_cancelados.png)
+
+| Elemento | Detalle |
+|---|---|
+| Filtros | `Convenio`, `Estado`, `Mes`, `Año` |
+| KPIs | `Total_Contratos` (3.249) · `% Porcentaje de canceladas` (25.52%) · `Ventas_Canceladas` total (829) |
+| KPIs por universo | `Ventas_Canceladas_Acueducto` (613) · `Ventas_Canceladas_PAP` (216) |
+| Tablas | Cantidad de contratos por estado cancelados — por convenio / canal |
+| Gráficas | Series temporales de canceladas: Totales / Acueducto / PAP |
+| Lógica | Estados de cancelación se identifican por `Estado` (no `ACT` ni `ACTFALLEC`) |
+
+### Hoja 03 — Vendedores_Acueducto
+
+![Hoja 03](img/03_vendedores_acueducto.png)
+
+| Elemento | Detalle |
+|---|---|
+| Filtros | `Convenio`, `CodNomVendedor`, `Canal_Venta`, `Mes`, `Año` |
+| Tablas | Ventas por convenio y vendedor — separadas Acueducto y PAP |
+| Gráficas | Barras horizontales: Ventas totales por vendedor + Ventas Acueducto por vendedor + Ventas PAP por vendedor |
+| Cumplimiento | Cruza `Ventas_Vendedor` vs. `Meta_Mes` (de `Metas_Mensuales`) |
+
+### Hoja 04 — Cantidad_y_Producción
+
+![Hoja 04](img/04_cantidad_y_produccion.png)
+
+| Elemento | Detalle |
+|---|---|
+| Filtros | `Convenio`, `Canal_Venta`, `Mes`, `Año`, `TienePago`, `CodNomVendedor` |
+| Tabla superior | Cantidad de ventas por vendedor y convenio — `Cuotas_Facturadas`, `Cuotas_Sin_Facturar`, `Cuotas_Totales` + descripción |
+| Tabla inferior | Producción por ventas vendedor y convenio — `Producción_Facturada` (=`SUM(Valor_Facturado)`), `Producción_Sin_Facturar` (=`SUM(Valor_Sin_Facturar)`) |
+| Métricas usadas | `Valor_Facturado`, `Valor_Sin_Facturar`, `Cuotas_Facturadas`, `Cuotas_Sin_Facturar`, `Total_Contratos` |
+
+### Hoja 05 — Caracterización
+
+![Hoja 05](img/05_caracterizacion.png)
+
+| Elemento | Detalle |
+|---|---|
+| Filtros | `Convenio`, `Canal_Venta`, `Mes`, `Año`, `TienePago`, `CodNomVendedor` |
+| Tabla | Distribución por `Estrato` con conteos y % |
+| Histograma | Distribución por `Edad_Titular` |
+| Gráfica donut | Distribución por `Sexo` |
+| Lista | Barrios con conteo de ventas |
+| Mapa | Polígonos de localidades de Bogotá (cruce `Barrio` ↔ `bta_localidades.kml`) |
+
+## KPIs / métricas resumidas
+
+| KPI | Expresión Qlik (esperada) | Hoja donde aparece |
+|---|---|---|
+| Ventas Totales | `SUM(Total_Contratos)` | 01, 02 (canceladas) |
+| Ventas Acueducto | `SUM({<Canal_PAP_Final={'ACUEDUCTO'}>} Total_Contratos)` | 01, 02 |
+| Ventas PAP | `SUM({<Canal_PAP_Final={'PAP'}>} Total_Contratos)` | 01, 02 |
+| % Canceladas | `SUM({<Estado={'<canceladas>'}>} Total_Contratos) / SUM(Total_Contratos)` | 02 |
+| Producción Facturada | `SUM(Valor_Facturado)` | 04 |
+| Producción Sin Facturar | `SUM(Valor_Sin_Facturar)` | 04 |
+| Cumplimiento Meta | `SUM(Total_Contratos) / Meta_Mes` | 03 |
+
+> _pendiente_: confirmar fórmulas exactas inspeccionando las medidas
+> definidas en el script de visualización (no de carga).
+
 ## Salidas
 
 | Archivo | Ruta |
@@ -220,8 +309,14 @@ Está comentado. No es bloqueante pero ensucia el cache del app.
 La variable se define en la app de Cargue pero no se persiste al QVD,
 así que la app de Transformación no la ve.
 
+### I8 — Descripción del app advierte que NO es estado de cierre mensual
+
+El propio reporte indica: _"no representa el estado de cierre mensual"_.
+Importante difundir esto a los consumidores del tablero para evitar que
+lo usen como fuente de cifras oficiales mensuales.
+
 ## Bitácora de cambios al script de transformación
 
 | Fecha | Cambio | Por |
 |---|---|---|
-| 2026-05-20 | Documentación inicial generada a partir del script vigente | _pendiente_ |
+| 2026-05-20 | Documentación inicial generada a partir del script y screenshots | _pendiente_ |
