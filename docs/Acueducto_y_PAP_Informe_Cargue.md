@@ -16,6 +16,30 @@
 | Frecuencia recarga | Automática 3 veces al día: 08:00, 12:00 y 17:00 |
 | Última recarga | Dinámica — ver QMC |
 
+## Tarea de recarga en QMC
+
+| Campo | Valor |
+|---|---|
+| Nombre de la tarea | `Reload task of Acueducto_y_PAP_Informe_Cargue` |
+| App asociada | `Acueducto_y_PAP_Informe_Cargue` |
+| Enabled | ✅ Sí |
+| Partial reload | ❌ No |
+| Task session timeout | 1440 min (24 h) |
+| Max retries | 0 (no reintenta si falla) |
+
+### Triggers programados
+
+| Nombre | Tipo | Habilitado | Hora |
+|---|---|---|---|
+| `Recarga 08am` | Schedule | ✅ | 08:00 |
+| `Recarga 12:00` | Schedule | ✅ | 12:00 |
+| `Recarga 17:00` | Schedule | ✅ | 17:00 |
+
+> Los tres triggers están activos. **No hay reintentos** configurados — si
+> un reload falla, el siguiente trigger lo intentará de nuevo (sin
+> notificación automática). Recomendado: agregar `Max retries ≥ 1` o un
+> trigger condicional "on previous task failure".
+
 ## Fuente de datos — SAP HANA
 
 | Atributo | Valor |

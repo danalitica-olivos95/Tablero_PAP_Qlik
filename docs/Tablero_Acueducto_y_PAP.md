@@ -15,7 +15,7 @@ mensuales del canal PAP.
 
 | App | App ID | Stream | Rol | Frecuencia recarga |
 |---|---|---|---|---|
-| `Acueducto_y_PAP_Informe_Cargue` | `09f9b467-71ba-4182-9dfe-b34b8cd9096d` | `Dir_Analitica` | Extracción HANA + QVD | 08:00, 12:00, 17:00 |
+| `Acueducto_y_PAP_Informe_Cargue` | `09f9b467-71ba-4182-9dfe-b34b8cd9096d` | `Dir_Analitica` | Extracción HANA + QVD | 08:00, 12:00, 17:00 (3 triggers QMC, sin reintentos) |
 | `Acueducto_y_PAP_Informe_Transformación` | `f9047ec0-c8b9-4b14-ba82-3579359a8dca` | `PAP` | Transformación + 5 hojas de análisis | Encadenada con Cargue |
 
 > Descripción oficial (Transformación): _"Reporte de ventas de Acueducto-PAP,
