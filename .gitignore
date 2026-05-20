@@ -1,0 +1,76 @@
+# --- Secretos / Credenciales ---
+.env
+.env.local
+*.env
+
+# --- Certificados Qlik (PEM, claves privadas) ---
+certs/
+*.pem
+*.key
+*.crt
+*.pfx
+
+# --- Datos generados / inputs binarios ---
+*.xlsx
+*.xls
+*.csv
+*.parquet
+*.qvd
+
+# --- Salidas de exploración (.txt) ---
+*_out.txt
+*_log.txt
+*_err.txt
+err*.txt
+breakdown_out.txt
+sd_analysis.txt
+san_diego_breakdown.txt
+check_fechas.txt
+apps_transformacion.txt
+fuentes_adicionales.txt
+salas_out.txt
+script_carga_out.txt
+script_comercial_homenajes.txt
+script_tra_comercial.txt
+cambios_script_tra_comercial.txt
+requerimiento_extraccion.txt
+explorar_out.txt
+COMANDOS.txt
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Virtual envs ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- IDE / OS ---
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# --- Logs / Temporales ---
+*.log
+*.tmp
+*.bak
+~$*
