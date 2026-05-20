@@ -4,11 +4,12 @@ Documentación funcional y técnica del tablero de Qlik Sense usado para el
 seguimiento del proceso de **Acueducto y PAP (Patrimonios Autónomos Públicos)**
 de Coopserfun.
 
-El tablero se compone de **dos apps de Qlik Sense** que trabajan en cadena:
+El tablero se compone de **apps de Qlik Sense** que trabajan en cadena:
 
 | # | App de Qlik | Rol | Documentación |
 |---|---|---|---|
-| 1 | `Acueducto_y_PAP_Informe_Cargue` | Carga, validación e ingesta de archivos fuente al modelo de datos | [docs/Acueducto_y_PAP_Informe_Cargue.md](docs/Acueducto_y_PAP_Informe_Cargue.md) |
+| 0 | `Map_Barrios_Bogota` *(propuesta)* | Maestro Barrio→Localidad desde Datos Abiertos Bogotá vía REST | [docs/Map_Barrios_Bogota.md](docs/Map_Barrios_Bogota.md) |
+| 1 | `Acueducto_y_PAP_Informe_Cargue` | Extracción desde SAP HANA y publicación de QVD | [docs/Acueducto_y_PAP_Informe_Cargue.md](docs/Acueducto_y_PAP_Informe_Cargue.md) |
 | 2 | `Acueducto_y_PAP_Informe_Transformación` | Transformación, cálculo de métricas y publicación de visualizaciones | [docs/Acueducto_y_PAP_Informe_Transformacion.md](docs/Acueducto_y_PAP_Informe_Transformacion.md) |
 
 Visión global del tablero (KPIs, flujo entre apps, hojas y vistas):
@@ -20,6 +21,7 @@ Visión global del tablero (KPIs, flujo entre apps, hojas y vistas):
 Tablero_PAP_Qlik/
 ├─ docs/                         Documentación del tablero y de cada app
 │   ├─ Tablero_Acueducto_y_PAP.md
+│   ├─ Map_Barrios_Bogota.md
 │   ├─ Acueducto_y_PAP_Informe_Cargue.md
 │   └─ Acueducto_y_PAP_Informe_Transformacion.md
 ├─ src/qlik_mcp/                 Servidor MCP usado para consultar las apps (herramienta)

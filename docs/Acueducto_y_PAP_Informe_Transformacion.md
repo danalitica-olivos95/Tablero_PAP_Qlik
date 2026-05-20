@@ -31,7 +31,8 @@
 | Insumo | Origen | Uso |
 |---|---|---|
 | `Acueducto_Ventas.qvd` | `lib://Extraccion (coopserfun_qlik)/` (publicado por app de Cargue) | Tabla principal de ventas |
-| `bta_localidades.kml` | `lib://Mapas (coopserfun_qlik)/mapa_bogota/` | Polígonos de localidades de Bogotá (cruce por `Barrio`) |
+| `bta_localidades.kml` | `lib://Mapas (coopserfun_qlik)/mapa_bogota/` | Polígonos de localidades de Bogotá (cruce por `Localidad`) |
+| `Map_Barrio_Localidad.qvd` | `lib://Mapeo (coopserfun_qlik)/` (publicado por [`Map_Barrios_Bogota`](Map_Barrios_Bogota.md)) | Maestro oficial barrio→localidad (Datos Abiertos Bogotá) |
 
 ## Convenios manejados
 
@@ -53,6 +54,7 @@
 | 6 | `Contratos_base` | LEFT JOIN del flag PAP a `Contratos_Base`, normaliza `Canal_PAP_Final`, concatena `CodNomVendedor`, **STORE final** |
 | 7 | `Calendario` | Tabla inline `Calendario_Meses` (2025-07 → 2026-12) |
 | 8 | `Metas_PAP` | Tabla inline `Metas_Mensuales` (2025-07 → 2025-12, todas con Meta_Mes = 60) |
+| 9 | `Mapeo_Barrios` *(nuevo)* | Carga `Map_Barrio_Localidad.qvd` como mapping tables y aplica doble `ApplyMap` para enriquecer cada registro con `Localidad`. Detalle completo en [Map_Barrios_Bogota.md](Map_Barrios_Bogota.md) |
 
 ## Reglas de transformación clave
 
@@ -154,6 +156,22 @@ Para los registros que no entraron al universo PAP (mayoría del 46188), el cana
 CodVendedor & ' - ' & NomVendedor AS CodNomVendedor
 ```
 
+### R11 — Enriquecimiento Barrio → Localidad (nuevo)
+
+Se agrega a partir de la app auxiliar [`Map_Barrios_Bogota`](Map_Barrios_Bogota.md).
+Doble `ApplyMap`:
+
+1. **Match exacto** sobre el barrio normalizado (`Upper+Trim+Replace`).
+2. Si falla, **match por primera palabra** del barrio (atrapa "SUBA LOMBARDIA"→SUBA).
+3. Si nada matchea, `Localidad = 'SIN_MAPEAR'`.
+
+Se añade un segundo campo `Localidad_Fuente` con valores `EXACTO`,
+`PRIMERA_PALABRA`, `SIN_MAPEAR` para trazabilidad. El TRACE del reload
+imprime el top 20 de barrios que cayeron en `SIN_MAPEAR` para que el
+analista los agregue a la tabla `Map_Excepciones` de la app auxiliar.
+
+Código completo en [Map_Barrios_Bogota.md](Map_Barrios_Bogota.md#cambios-en-acueducto_y_pap_informe_transformación).
+
 ## Modelo de datos final
 
 ### Tabla principal: `Contratos_Base`
@@ -168,7 +186,7 @@ Campos resultantes (después del `RENAME TABLE Contratos_Base_Final TO Contratos
 | Cuotas | `Cuotas`, `Cuotas_Facturadas`, `Cuotas_Sin_Facturar` |
 | Importes | `Valor_Facturado`, `Valor_Sin_Facturar`, `Ingreso_Recibido`, `ValorContrato`, `Total_Valor_Contrato` |
 | Pagos | `TienePago` |
-| Demográficos | `Edad_Titular`, `Sexo`, `Estrato`, `Barrio` |
+| Demográficos | `Edad_Titular`, `Sexo`, `Estrato`, `Barrio`, `Localidad` *(nuevo)*, `Localidad_Fuente` *(nuevo)* |
 | Fechas | `FechaInicioVigencia`, `Dia_Contrato`, `Mes_Contrato`, `Anio_Contrato`, `AñoMes` |
 | Convenio | `Convenio`, `Convenio_Etiqueta` |
 | Canal | `Canal_Venta`, `Canal_Venta_PAP_Clasificado`, `Canal_PAP_Final` |

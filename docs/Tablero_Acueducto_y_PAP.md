@@ -15,6 +15,7 @@ mensuales del canal PAP.
 
 | App | App ID | Stream | Rol | Frecuencia recarga |
 |---|---|---|---|---|
+| `Map_Barrios_Bogota` *(nueva, propuesta)* | _pendiente_ | `Dir_Analitica` | Maestro Barrio→Localidad desde Datos Abiertos Bogotá | 06:00 (antes de Cargue) |
 | `Acueducto_y_PAP_Informe_Cargue` | `09f9b467-71ba-4182-9dfe-b34b8cd9096d` | `Dir_Analitica` | Extracción HANA + QVD | 08:00, 12:00, 17:00 (3 triggers QMC, sin reintentos) |
 | `Acueducto_y_PAP_Informe_Transformación` | `f9047ec0-c8b9-4b14-ba82-3579359a8dca` | `PAP` | Transformación + 5 hojas de análisis | Encadenada con Cargue |
 
@@ -34,25 +35,28 @@ mensuales del canal PAP.
 ## Flujo entre apps
 
 ```
-┌─────────────────────────────────────────────┐
-│  SAP HANA                                   │
-│  _SYS_BIC.OLIVOS.Qlik.Acueducto/            │
-│  OLV_ACUEDUCTO_VENTAS                       │
-└────────────────────┬────────────────────────┘
-                     │  LIB CONNECT HANA1
-                     ▼
-┌─────────────────────────────────────────────┐
-│  App: Acueducto_y_PAP_Informe_Cargue        │
-│  09f9b467-71ba-4182-9dfe-b34b8cd9096d       │
-│  • LOAD + SQL SELECT (22 columnas)          │
-│  • STORE QVD + CSV                          │
-└────────────────────┬────────────────────────┘
-                     │
-                     ▼
-        lib://Extraccion (coopserfun_qlik)/
-        Acueducto_Ventas.qvd
-                     │
-                     ▼
+┌─────────────────────────────────────────────┐          ┌──────────────────────────┐
+│  SAP HANA                                   │          │ Datos Abiertos Bogotá    │
+│  _SYS_BIC.OLIVOS.Qlik.Acueducto/            │          │ (Socrata SODA API)       │
+│  OLV_ACUEDUCTO_VENTAS                       │          └────────────┬─────────────┘
+└────────────────────┬────────────────────────┘                       │
+                     │  LIB CONNECT HANA1                             │ REST 06:00
+                     ▼                                                ▼
+┌─────────────────────────────────────────────┐          ┌──────────────────────────┐
+│  App: Acueducto_y_PAP_Informe_Cargue        │          │ App: Map_Barrios_Bogota  │
+│  09f9b467-71ba-4182-9dfe-b34b8cd9096d       │          │ (propuesta — 06:00)      │
+│  • LOAD + SQL SELECT (22 columnas)          │          │ • REST Connector         │
+│  • STORE QVD + CSV                          │          │ • Limpieza + DISTINCT    │
+└────────────────────┬────────────────────────┘          │ • Excepciones manuales   │
+                     │                                   │ • STORE Map.qvd          │
+                     ▼                                   └────────────┬─────────────┘
+        lib://Extraccion (coopserfun_qlik)/                           │
+        Acueducto_Ventas.qvd                                          ▼
+                     │                            lib://Mapeo (coopserfun_qlik)/
+                     │                            Map_Barrio_Localidad.qvd
+                     │                                                │
+                     └───────────────────────┬────────────────────────┘
+                                             ▼
 ┌─────────────────────────────────────────────┐
 │  App: Acueducto_y_PAP_Informe_Transformación│
 │  f9047ec0-c8b9-4b14-ba82-3579359a8dca       │
@@ -62,7 +66,8 @@ mensuales del canal PAP.
 │  • Cruza vendedores PAP vs. Acueducto       │
 │  • Normaliza fechas y montos                │
 │  • Clasifica canal final                    │
-│  • Une mapa Bogotá (KML)                    │
+│  • ApplyMap Barrio → Localidad (R11 nuevo)  │
+│  • Une mapa Bogotá (KML por Localidad)      │
 │  • Tabla Contratos_Base + STORE CSV         │
 │  • Publica 5 hojas al Hub                   │
 └────────────────────┬────────────────────────┘
@@ -77,7 +82,9 @@ mensuales del canal PAP.
 | Insumo | Ruta Qlik | Consumido por |
 |---|---|---|
 | Vista HANA `OLV_ACUEDUCTO_VENTAS` | conexión `HANA1 (coopserfun_qlik)` | Cargue |
+| Datos Abiertos Bogotá (barrios) | conexión REST `DatosAbiertos_Bogota_REST` | `Map_Barrios_Bogota` |
 | `Acueducto_Ventas.qvd` | `lib://Extraccion (coopserfun_qlik)/` | Transformación |
+| `Map_Barrio_Localidad.qvd` | `lib://Mapeo (coopserfun_qlik)/` | Transformación |
 | `bta_localidades.kml` (Bogotá) | `lib://Mapas (coopserfun_qlik)/mapa_bogota/` | Transformación |
 | `Contratos_Base.csv` (final) | `lib://Transformacion (coopserfun_qlik)/` | Visualizaciones / consumo externo |
 
@@ -93,6 +100,7 @@ mensuales del canal PAP.
 | R6 | Fechas en HANA como `DD/MM/YYYY` → `Date#(...,'DD/MM/YYYY')` | Transformación, R6 |
 | R7 | `Total_Valor_Contrato = ValorContrato × Cuotas` | Transformación, R7 |
 | R9 | `Canal_PAP_Final = 'ACUEDUCTO'` cuando no entró al universo PAP | Transformación, R9 |
+| R11 | Enriquecimiento `Barrio → Localidad` con doble `ApplyMap` (exacto + primera palabra), valor por defecto `SIN_MAPEAR` y campo `Localidad_Fuente` para trazabilidad | Transformación, tab nuevo `Mapeo_Barrios` (ver [Map_Barrios_Bogota.md](Map_Barrios_Bogota.md)) |
 
 > Detalle de cada regla en [Acueducto_y_PAP_Informe_Transformacion.md](Acueducto_y_PAP_Informe_Transformacion.md).
 
@@ -148,3 +156,4 @@ Referidos desde la doc por app (issue IDs internos):
 | 2026-05-20 | (repo) | Documentación inicial a partir del script vigente | _pendiente_ |
 | 2026-05-20 | Cargue | App ID, Stream y frecuencia recarga llenados | danalitica-olivos95 |
 | 2026-05-20 | Transformación | App ID, descripción EAAB-ESP y 5 hojas con screenshots documentadas | _pendiente_ |
+| 2026-05-20 | Tablero | Propuesta de tercera app `Map_Barrios_Bogota` (REST → Datos Abiertos Bogotá) y regla R11 de mapeo Barrio→Localidad | _pendiente_ |
